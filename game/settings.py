@@ -1,0 +1,31 @@
+# Fenetre
+WIDTH, HEIGHT = 480, 800
+FPS = 60
+
+# Couleurs
+GREEN = (80, 160, 80)
+DARK_GREEN = (60, 130, 60)
+RIVER = (70, 130, 200)
+BRIDGE = (150, 110, 70)
+WHITE = (240, 240, 240)
+BLACK = (20, 20, 20)
+RED = (200, 50, 50)
+BLUE = (50, 90, 200)
+PURPLE = (160, 70, 200)
+
+# Equipes
+TEAM_PLAYER = "player"
+TEAM_AI = "ai"
+
+# Elixir
+ELIXIR_MAX = 10
+ELIXIR_START = 5
+ELIXIR_PER_SECOND = 0.7
+
+# Chateaux
+CASTLE_HP = 2000
+CASTLE_SIZE = (120, 90)
+
+# Arene
+RIVER_Y = HEIGHT // 2
+RIVER_HEIGHT = 40
