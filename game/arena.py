@@ -1,36 +1,55 @@
+"""Terrain: riviere, ponts et waypoints par lane."""
 import pygame
-from game.settings import (
-    WIDTH, HEIGHT, GREEN, DARK_GREEN, RIVER, BRIDGE, RIVER_Y, RIVER_HEIGHT,
-)
+from . import settings as S
+
+LANES = ("left", "right")
 
 
 class Arena:
-    """Terrain de jeu : herbe, riviere et deux ponts."""
+    def __init__(self):
+        self.width = S.WIDTH
+        self.height = S.HEIGHT
+        self.river_y = self.height // 2
+        self.river_h = 40
+        self.bridge_w = 70
+        self.lane_x = {"left": self.width // 4, "right": 3 * self.width // 4}
+        self.bridges = {
+            lane: pygame.Rect(x - self.bridge_w // 2, self.river_y - self.river_h // 2,
+                              self.bridge_w, self.river_h)
+            for lane, x in self.lane_x.items()
+        }
 
-    BRIDGE_XS = (WIDTH // 4, 3 * WIDTH // 4)
-    BRIDGE_WIDTH = 60
+    def lane_of(self, x):
+        """Lane la plus proche d'une coordonnee x."""
+        return "left" if abs(x - self.lane_x["left"]) <= abs(x - self.lane_x["right"]) else "right"
 
-    def draw(self, surface):
-        surface.fill(GREEN)
-        # Damier leger pour le style
-        for y in range(0, HEIGHT, 80):
-            pygame.draw.rect(surface, DARK_GREEN, (0, y, WIDTH, 40))
-        # Riviere
-        pygame.draw.rect(
-            surface, RIVER, (0, RIVER_Y - RIVER_HEIGHT // 2, WIDTH, RIVER_HEIGHT)
-        )
-        # Ponts
-        for bx in self.BRIDGE_XS:
-            pygame.draw.rect(
-                surface,
-                BRIDGE,
-                (bx - self.BRIDGE_WIDTH // 2, RIVER_Y - RIVER_HEIGHT // 2,
-                 self.BRIDGE_WIDTH, RIVER_HEIGHT),
-            )
+    def waypoints(self, lane, team, target_pos):
+        """Chemin: entree du pont, sortie du pont, puis cible finale.
 
-    def is_in_team_half(self, pos, team):
-        """Le joueur ne peut poser des unites que dans sa moitie (en bas)."""
-        _, y = pos
+        team 'player' monte (y diminue), team 'ai' descend (y augmente).
+        """
+        x = self.lane_x[lane]
+        top = self.river_y - self.river_h // 2 - 5
+        bottom = self.river_y + self.river_h // 2 + 5
         if team == "player":
-            return y > RIVER_Y + RIVER_HEIGHT // 2
-        return y < RIVER_Y - RIVER_HEIGHT // 2
+            pts = [(x, bottom), (x, top)]
+        else:
+            pts = [(x, top), (x, bottom)]
+        pts.append((float(target_pos[0]), float(target_pos[1])))
+        return pts
+
+    def in_river(self, pos):
+        return abs(pos[1] - self.river_y) < self.river_h // 2
+
+    def on_bridge(self, pos):
+        return any(b.collidepoint(pos) for b in self.bridges.values())
+
+    def side_of(self, y):
+        return "ai" if y < self.river_y else "player"
+
+    def draw(self, surf):
+        surf.fill((70, 140, 70))
+        river = pygame.Rect(0, self.river_y - self.river_h // 2, self.width, self.river_h)
+        pygame.draw.rect(surf, (60, 110, 200), river)
+        for b in self.bridges.values():
+            pygame.draw.rect(surf, (140, 100, 60), b)
